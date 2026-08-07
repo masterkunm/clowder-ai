@@ -190,6 +190,27 @@ describe('F264 author message disposition selector', () => {
     expect(trigger.textContent).toContain('默认：追加到当前回复');
   });
 
+  it('leaves a global Append default implicit for server-side admission', async () => {
+    const onSend = vi.fn();
+    await act(async () => {
+      root.render(React.createElement(ChatInput, { threadId: 'thread-4b', onSend, hasActiveInvocation: true }));
+      await Promise.resolve();
+    });
+    const trigger = container.querySelector('[data-testid="message-disposition-trigger"]') as HTMLButtonElement;
+    await act(async () => {
+      trigger.click();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      (container.querySelector('[data-disposition-option="continue_current"]') as HTMLButtonElement).click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await typeAndSend('由服务端解析默认追加');
+
+    expect(onSend).toHaveBeenCalledWith('由服务端解析默认追加', undefined, undefined, 'queue', undefined, undefined);
+  });
+
   it('does not expose preference scopes or provider internals in the send flow', async () => {
     await act(async () => {
       root.render(React.createElement(ChatInput, { threadId: 'thread-5', onSend: vi.fn(), hasActiveInvocation: true }));

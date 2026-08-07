@@ -276,12 +276,10 @@ export function ChatInput({
         // Only a one-shot override belongs on this message. Thread/global/product
         // inheritance resolves again at server admission, closing hydration races.
         // The server owns exact-carrier admission and writes the durable
-        // fallback reason. Sending the requested global/one-shot disposition
-        // lets an unavailable append fail closed to Queue without losing why.
+        // fallback reason. The global default stays implicit so a stale client
+        // hydration snapshot cannot override the persisted server preference.
         const declaredDisposition =
-          dispositionIsMeaningful && deliveryMode !== 'force'
-            ? (messageDisposition.oneShot ?? messageDisposition.effective)
-            : undefined;
+          dispositionIsMeaningful && deliveryMode !== 'force' ? (messageDisposition.oneShot ?? undefined) : undefined;
         const admission = onSend(
           trimmed,
           images.length > 0 ? images : undefined,
