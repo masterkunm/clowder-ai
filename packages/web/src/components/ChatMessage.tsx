@@ -27,6 +27,7 @@ import { toCliEvents } from './cli-output/toCliEvents';
 import { DirectionPill } from './DirectionPill';
 import { EvidencePanel } from './EvidencePanel';
 import { GovernanceBlockedCard } from './GovernanceBlockedCard';
+import { collectMessageAppendSources, MessageAppendIndicator } from './MessageAppendIndicator';
 import { MessageBubble } from './MessageBubble';
 import { MessageReceiptDock } from './MessageReceiptDock';
 import { MetadataBadge } from './MetadataBadge';
@@ -184,6 +185,12 @@ export function ChatMessage({
     : message.content;
 
   const catData = message.catId ? getCatById(message.catId) : undefined;
+  const appendedSources = collectMessageAppendSources(
+    threadMessages,
+    message.extra?.turnExecution?.invocationId ??
+      message.extra?.stream?.turnInvocationId ??
+      message.extra?.stream?.invocationId,
+  );
   const catStyle = catData
     ? (() => {
         const breed = BREED_STYLES[catData.breedId ?? ''] ?? DEFAULT_BREED_STYLE;
@@ -555,6 +562,7 @@ export function ChatMessage({
         )}
         {message.extra?.queueReceipt && (
           <MessageReceiptDock
+            messageId={message.id}
             receipt={message.extra.queueReceipt}
             messages={threadMessages}
             activeInvocationIds={activeInvocationIds}
@@ -818,6 +826,7 @@ export function ChatMessage({
           messageSource={message.source}
         />
       )}
+      <MessageAppendIndicator sources={appendedSources} />
       {freshnessNotice && !message.extra?.supplement && (
         <div
           data-testid="freshness-supplement-status"
